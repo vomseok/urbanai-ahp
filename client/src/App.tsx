@@ -5,6 +5,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
+// 경북형 Urban AI AHP 플랫폼 — 한국 행정문서 미니멀리즘 디자인
 
 
 function Router() {

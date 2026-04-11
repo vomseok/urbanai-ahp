@@ -40,77 +40,50 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* GDI 경북연구원 브랜드 색상 */
+  --color-gdi-navy: oklch(0.26 0.08 255);
+  --color-gdi-blue: oklch(0.45 0.12 255);
+  --color-gdi-light-blue: oklch(0.65 0.10 255);
+  --color-gdi-gold: oklch(0.72 0.14 70);
+  --color-gdi-bg: oklch(0.98 0.003 255);
+  --color-gdi-section: oklch(0.96 0.005 255);
 }
 
 :root {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-600);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --radius: 0.65rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.235 0.015 65);
+  --radius: 0.5rem;
+  --background: oklch(0.985 0.002 255);
+  --foreground: oklch(0.22 0.02 255);
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.235 0.015 65);
+  --card-foreground: oklch(0.22 0.02 255);
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.235 0.015 65);
-  --secondary: oklch(0.98 0.001 286.375);
-  --secondary-foreground: oklch(0.4 0.015 65);
-  --muted: oklch(0.967 0.001 286.375);
-  --muted-foreground: oklch(0.552 0.016 285.938);
-  --accent: oklch(0.967 0.001 286.375);
-  --accent-foreground: oklch(0.141 0.005 285.823);
+  --popover-foreground: oklch(0.22 0.02 255);
+  --primary: oklch(0.26 0.08 255);
+  --primary-foreground: oklch(0.98 0 0);
+  --secondary: oklch(0.94 0.005 255);
+  --secondary-foreground: oklch(0.35 0.04 255);
+  --muted: oklch(0.94 0.005 255);
+  --muted-foreground: oklch(0.55 0.02 255);
+  --accent: oklch(0.92 0.01 255);
+  --accent-foreground: oklch(0.26 0.08 255);
   --destructive: oklch(0.577 0.245 27.325);
   --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(0.92 0.004 286.32);
-  --input: oklch(0.92 0.004 286.32);
-  --ring: oklch(0.623 0.214 259.815);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.235 0.015 65);
-  --sidebar-accent: oklch(0.967 0.001 286.375);
-  --sidebar-accent-foreground: oklch(0.141 0.005 285.823);
-  --sidebar-border: oklch(0.92 0.004 286.32);
-  --sidebar-ring: oklch(0.623 0.214 259.815);
-}
-
-.dark {
-  --primary: var(--color-blue-700);
-  --primary-foreground: var(--color-blue-50);
-  --sidebar-primary: var(--color-blue-500);
-  --sidebar-primary-foreground: var(--color-blue-50);
-  --background: oklch(0.141 0.005 285.823);
-  --foreground: oklch(0.85 0.005 65);
-  --card: oklch(0.21 0.006 285.885);
-  --card-foreground: oklch(0.85 0.005 65);
-  --popover: oklch(0.21 0.006 285.885);
-  --popover-foreground: oklch(0.85 0.005 65);
-  --secondary: oklch(0.24 0.006 286.033);
-  --secondary-foreground: oklch(0.7 0.005 65);
-  --muted: oklch(0.274 0.006 286.033);
-  --muted-foreground: oklch(0.705 0.015 286.067);
-  --accent: oklch(0.274 0.006 286.033);
-  --accent-foreground:  oklch(0.92 0.005 65);
-  --destructive: oklch(0.704 0.191 22.216);
-  --destructive-foreground: oklch(0.985 0 0);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.488 0.243 264.376);
-  --chart-1: var(--color-blue-300);
-  --chart-2: var(--color-blue-500);
-  --chart-3: var(--color-blue-600);
-  --chart-4: var(--color-blue-700);
-  --chart-5: var(--color-blue-800);
-  --sidebar: oklch(0.21 0.006 285.885);
-  --sidebar-foreground: oklch(0.85 0.005 65);
-  --sidebar-accent: oklch(0.274 0.006 286.033);
-  --sidebar-accent-foreground:  oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.488 0.243 264.376);
+  --border: oklch(0.88 0.008 255);
+  --input: oklch(0.88 0.008 255);
+  --ring: oklch(0.45 0.12 255);
+  --chart-1: oklch(0.26 0.08 255);
+  --chart-2: oklch(0.45 0.12 255);
+  --chart-3: oklch(0.65 0.10 255);
+  --chart-4: oklch(0.72 0.14 70);
+  --chart-5: oklch(0.55 0.08 200);
+  --sidebar: oklch(0.26 0.08 255);
+  --sidebar-foreground: oklch(0.95 0.005 255);
+  --sidebar-primary: oklch(0.72 0.14 70);
+  --sidebar-primary-foreground: oklch(0.22 0.02 255);
+  --sidebar-accent: oklch(0.32 0.07 255);
+  --sidebar-accent-foreground: oklch(0.95 0.005 255);
+  --sidebar-border: oklch(0.35 0.06 255);
+  --sidebar-ring: oklch(0.65 0.10 255);
 }
 
 @layer base {
@@ -119,6 +92,7 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Noto Sans KR', sans-serif;
   }
   button:not(:disabled),
   [role="button"]:not([aria-disabled="true"]),
@@ -131,27 +105,18 @@
   input[type="radio"]:not(:disabled) {
     @apply cursor-pointer;
   }
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Noto Sans KR', sans-serif;
+    font-weight: 700;
+  }
 }
 
 @layer components {
-  /**
-   * Custom container utility that centers content and adds responsive padding.
-   *
-   * This overrides Tailwind's default container behavior to:
-   * - Auto-center content (mx-auto)
-   * - Add responsive horizontal padding
-   * - Set max-width for large screens
-   *
-   * Usage: <div className="container">...</div>
-   *
-   * For custom widths, use max-w-* utilities directly:
-   * <div className="max-w-6xl mx-auto px-4">...</div>
-   */
   .container {
     width: 100%;
     margin-left: auto;
     margin-right: auto;
-    padding-left: 1rem; /* 16px - mobile padding */
+    padding-left: 1rem;
     padding-right: 1rem;
   }
 
@@ -162,16 +127,133 @@
 
   @media (min-width: 640px) {
     .container {
-      padding-left: 1.5rem; /* 24px - tablet padding */
+      padding-left: 1.5rem;
       padding-right: 1.5rem;
     }
   }
 
   @media (min-width: 1024px) {
     .container {
-      padding-left: 2rem; /* 32px - desktop padding */
+      padding-left: 2rem;
       padding-right: 2rem;
-      max-width: 1280px; /* Standard content width */
+      max-width: 1280px;
     }
+  }
+
+  /* AHP 전용 컴포넌트 스타일 */
+  .ahp-sidebar {
+    background: var(--color-gdi-navy);
+    color: oklch(0.95 0.005 255);
+  }
+
+  .ahp-step-active {
+    background: oklch(0.32 0.07 255);
+    border-left: 3px solid var(--color-gdi-gold);
+  }
+
+  .ahp-step-done {
+    opacity: 0.7;
+  }
+
+  .ahp-matrix-cell {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.875rem;
+  }
+
+  .cr-good {
+    color: oklch(0.55 0.15 145);
+  }
+
+  .cr-warning {
+    color: oklch(0.72 0.14 70);
+  }
+
+  .cr-bad {
+    color: oklch(0.577 0.245 27.325);
+  }
+
+  .serif-body {
+    font-family: 'Noto Serif KR', serif;
+    line-height: 1.9;
+  }
+
+  .mono-data {
+    font-family: 'IBM Plex Mono', monospace;
+  }
+
+  /* 슬라이더 커스텀 스타일 */
+  .pairwise-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    height: 6px;
+    border-radius: 3px;
+    outline: none;
+    cursor: pointer;
+  }
+
+  .pairwise-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--color-gdi-navy);
+    border: 3px solid white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .pairwise-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.2);
+  }
+
+  /* 페이지 전환 애니메이션 */
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .animate-slide-in {
+    animation: slideInRight 0.4s ease-out;
+  }
+
+  .animate-fade-up {
+    animation: fadeInUp 0.5s ease-out;
+  }
+
+  /* 결과 차트 컨테이너 */
+  .result-card {
+    background: white;
+    border: 1px solid oklch(0.88 0.008 255);
+    border-top: 4px solid var(--color-gdi-navy);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    box-shadow: 0 2px 12px rgba(26, 58, 107, 0.08);
+  }
+
+  /* 인쇄 스타일 */
+  @media print {
+    .no-print { display: none !important; }
+    .print-only { display: block !important; }
+    body { background: white; }
+    .result-card { box-shadow: none; border: 1px solid #ccc; }
   }
 }
