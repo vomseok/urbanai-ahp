@@ -365,6 +365,142 @@ export function calculateGlobalWeights(
   return globalWeights;
 }
 
+// ============================================================
+// 다중 전문가 집계 (기하평균 통합)
+// ============================================================
+
+/**
+ * 업로드된 JSON 파일 한 건의 파싱 결과 타입
+ */
+export interface ParsedExpertResult {
+  expert: ExpertInfo;
+  timestamp: string;
+  results: {
+    criterionId: string;
+    labels: string[];
+    weights: number[];
+    cr: number;
+    isConsistent: boolean;
+  }[];
+}
+
+/**
+ * 집계 결과 타입
+ */
+export interface AggregatedResult {
+  criterionId: string;
+  labels: string[];
+  aggregatedWeights: number[];     // 기하평균 통합 가중치
+  individualWeights: number[][];   // 전문가별 가중치 [전문가][지표]
+  crValues: number[];              // 전문가별 CR
+  inconsistentCount: number;       // 일관성 미달 전문가 수
+}
+
+/**
+ * JSON 파일 내용을 파싱하여 ParsedExpertResult 반환
+ * 형식 검증 포함
+ */
+export function parseExpertJSON(raw: string): ParsedExpertResult {
+  const obj = JSON.parse(raw);
+  if (!obj.metadata || !obj.results || !Array.isArray(obj.results)) {
+    throw new Error("올바른 AHP 결과 JSON 형식이 아닙니다.");
+  }
+  return {
+    expert: obj.metadata.expert,
+    timestamp: obj.metadata.timestamp,
+    results: obj.results,
+  };
+}
+
+/**
+ * 여러 전문가의 가중치를 기하평균으로 통합
+ * 기하평균 = (w1 × w2 × ... × wn)^(1/n)
+ * 통합 후 정규화하여 합이 1이 되도록 처리
+ */
+export function aggregateByGeometricMean(
+  expertResults: ParsedExpertResult[],
+  criterionId: string
+): AggregatedResult {
+  const refResult = expertResults[0].results.find((r) => r.criterionId === criterionId);
+  if (!refResult) throw new Error(`criterionId '${criterionId}'를 찾을 수 없습니다.`);
+
+  const n = refResult.weights.length;
+  const labels = refResult.labels;
+
+  // 전문가별 가중치 배열 수집
+  const individualWeights: number[][] = expertResults.map((er) => {
+    const r = er.results.find((r) => r.criterionId === criterionId);
+    return r ? r.weights : Array(n).fill(1 / n);
+  });
+
+  const crValues: number[] = expertResults.map((er) => {
+    const r = er.results.find((r) => r.criterionId === criterionId);
+    return r ? r.cr : 0;
+  });
+
+  // 지표별 기하평균 계산
+  const geoMeans: number[] = Array.from({ length: n }, (_, i) => {
+    const product = individualWeights.reduce((acc, w) => acc * w[i], 1);
+    return Math.pow(product, 1 / expertResults.length);
+  });
+
+  // 정규화
+  const sum = geoMeans.reduce((a, b) => a + b, 0);
+  const aggregatedWeights = geoMeans.map((v) => v / sum);
+
+  const inconsistentCount = crValues.filter((cr) => cr >= 0.1).length;
+
+  return {
+    criterionId,
+    labels,
+    aggregatedWeights,
+    individualWeights,
+    crValues,
+    inconsistentCount,
+  };
+}
+
+/**
+ * 모든 기준(대분류 + 소분류)에 대해 기하평균 집계 수행
+ */
+export function aggregateAllCriteria(
+  expertResults: ParsedExpertResult[]
+): AggregatedResult[] {
+  const criterionIds = ["root", ...CRITERIA.map((c) => c.id)];
+  return criterionIds.map((id) => aggregateByGeometricMean(expertResults, id));
+}
+
+/**
+ * 집계된 종합 가중치 계산 (대분류 × 소분류)
+ */
+export function calculateAggregatedGlobalWeights(
+  aggregatedResults: AggregatedResult[]
+): { id: string; label: string; parentLabel: string; localWeight: number; globalWeight: number }[] {
+  const rootResult = aggregatedResults.find((r) => r.criterionId === "root");
+  if (!rootResult) return [];
+
+  const globalWeights: { id: string; label: string; parentLabel: string; localWeight: number; globalWeight: number }[] = [];
+
+  CRITERIA.forEach((criterion, cIdx) => {
+    const parentWeight = rootResult.aggregatedWeights[cIdx];
+    const subResult = aggregatedResults.find((r) => r.criterionId === criterion.id);
+
+    if (subResult) {
+      criterion.subCriteria.forEach((sub, sIdx) => {
+        globalWeights.push({
+          id: sub.id,
+          label: sub.label,
+          parentLabel: criterion.label,
+          localWeight: subResult.aggregatedWeights[sIdx],
+          globalWeight: parentWeight * subResult.aggregatedWeights[sIdx],
+        });
+      });
+    }
+  });
+
+  return globalWeights;
+}
+
 /**
  * 가중치를 백분율로 변환
  */

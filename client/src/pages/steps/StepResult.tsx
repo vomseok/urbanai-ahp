@@ -25,8 +25,9 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, Printer, CheckCircle2, AlertTriangle } from "lucide-react";
+import { Download, RefreshCw, Printer, CheckCircle2, AlertTriangle, Users } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "wouter";
 
 export default function StepResult() {
   const { state, resetSurvey } = useSurvey();
@@ -122,6 +123,15 @@ export default function StepResult() {
               <Download size={14} className="mr-1.5" />
               JSON 저장
             </Button>
+            <Link href="/aggregate">
+              <Button
+                size="sm"
+                style={{ background: "oklch(0.26 0.08 255)", color: "white" }}
+              >
+                <Users size={14} className="mr-1.5" />
+                전문가 집계 분석
+              </Button>
+            </Link>
             <Button
               variant="outline"
               size="sm"

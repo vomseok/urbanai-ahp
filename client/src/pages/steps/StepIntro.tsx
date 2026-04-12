@@ -3,6 +3,7 @@ import { useSurvey } from "@/contexts/SurveyContext";
 import { CRITERIA } from "@/lib/ahp";
 import { ArrowRight, BookOpen, BarChart3, FileText, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
 
 export default function StepIntro() {
   const { nextStep } = useSurvey();
@@ -131,6 +132,21 @@ export default function StepIntro() {
         설문 시작하기
         <ArrowRight size={18} className="ml-2" />
       </Button>
+
+      <Link href="/aggregate">
+        <Button
+          variant="outline"
+          size="lg"
+          className="w-full font-semibold mt-3"
+          style={{
+            borderColor: "oklch(0.26 0.08 255)",
+            color: "oklch(0.26 0.08 255)",
+          }}
+        >
+          <Users size={18} className="mr-2" />
+          전문가 응답 집계 분석으로 이동
+        </Button>
+      </Link>
     </div>
   );
 }
