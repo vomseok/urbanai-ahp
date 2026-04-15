@@ -41,9 +41,15 @@ import {
   FileJson,
   BarChart2,
   Info,
+  RefreshCw,
+  Loader2,
+  Database,
 } from "lucide-react";
 import { toast } from "sonner";
 import CRBadge from "@/components/CRBadge";
+
+// ▶ Google Apps Script 웹앱 URL (VITE_APPS_SCRIPT_URL 환경변수로 설정)
+const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || "";
 
 const COLORS = [
   "oklch(0.26 0.08 255)",
@@ -75,6 +81,50 @@ export default function Aggregate() {
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
   const [activeTab, setActiveTab] = useState<"upload" | "result">("upload");
+  const [sheetsLoading, setSheetsLoading] = useState(false);
+  const [sheetsError, setSheetsError] = useState("");
+  const [sheetsLoaded, setSheetsLoaded] = useState(false);
+
+  // Google Sheets에서 응답 불러오기
+  const handleLoadFromSheets = useCallback(async () => {
+    if (!APPS_SCRIPT_URL) {
+      toast.error("Google Sheets URL이 설정되지 않았습니다.");
+      return;
+    }
+    setSheetsLoading(true);
+    setSheetsError("");
+    try {
+      const res = await fetch(APPS_SCRIPT_URL, { method: "GET" });
+      const data = await res.json();
+      if (!data.success) throw new Error(data.error || "불러오기 실패");
+      const responses: ParsedExpertResult[] = data.responses
+        .filter((r: any) => r.ahp_results_json)
+        .map((r: any) => {
+          const raw = typeof r.ahp_results === "object" ? r.ahp_results : JSON.parse(r.ahp_results_json);
+          return {
+            expert: raw.expertInfo || raw.metadata?.expert || {},
+            timestamp: raw.timestamp || raw.metadata?.timestamp || "",
+            results: raw.results || [],
+          } as ParsedExpertResult;
+        });
+      if (responses.length === 0) {
+        toast.warning("Google Sheets에 저장된 응답이 없습니다.");
+        setSheetsLoading(false);
+        return;
+      }
+      setUploadedFiles(responses.map((p, i) => ({
+        name: `sheets_응답_${i + 1}_${p.expert.name || "전문가"}.json`,
+        parsed: p,
+      })));
+      setSheetsLoaded(true);
+      toast.success(`Google Sheets에서 ${responses.length}명의 응답을 불러왔습니다.`);
+    } catch (err) {
+      setSheetsError(String(err));
+      toast.error(`불러오기 실패: ${err}`);
+    } finally {
+      setSheetsLoading(false);
+    }
+  }, []);
 
   // 파일 파싱 처리
   const processFiles = useCallback((files: FileList | File[]) => {
@@ -349,6 +399,64 @@ export default function Aggregate() {
         {/* ─── 업로드 탭 ─── */}
         {activeTab === "upload" && (
           <div className="space-y-6">
+            {/* Google Sheets 불러오기 */}
+            {APPS_SCRIPT_URL && (
+              <div
+                className="rounded-xl border p-5 flex items-center justify-between"
+                style={{
+                  background: sheetsLoaded ? "oklch(0.95 0.05 145)" : "white",
+                  borderColor: sheetsLoaded ? "oklch(0.75 0.12 145)" : "oklch(0.82 0.015 255)",
+                }}
+              >
+                <div className="flex items-center gap-3">
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ background: sheetsLoaded ? "oklch(0.88 0.10 145)" : "oklch(0.92 0.05 255)" }}
+                  >
+                    <Database size={20} style={{ color: sheetsLoaded ? "oklch(0.35 0.15 145)" : "oklch(0.26 0.08 255)" }} />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-foreground">
+                      Google Sheets에서 자동 불러오기
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {sheetsLoaded
+                        ? `${uploadedFiles.length}명의 응답을 불러왔습니다.`
+                        : "설문 응답이 자동 저장된 Google Sheets에서 직접 불러옵니다."}
+                    </p>
+                    {sheetsError && (
+                      <p className="text-xs mt-1" style={{ color: "oklch(0.45 0.15 25)" }}>{sheetsError}</p>
+                    )}
+                  </div>
+                </div>
+                <Button
+                  onClick={handleLoadFromSheets}
+                  disabled={sheetsLoading}
+                  size="sm"
+                  style={{
+                    background: sheetsLoaded ? "oklch(0.45 0.15 145)" : "oklch(0.26 0.08 255)",
+                    color: "white",
+                  }}
+                >
+                  {sheetsLoading ? (
+                    <Loader2 size={14} className="mr-1.5 animate-spin" />
+                  ) : (
+                    <RefreshCw size={14} className="mr-1.5" />
+                  )}
+                  {sheetsLoaded ? "새로고침" : "불러오기"}
+                </Button>
+              </div>
+            )}
+
+            {/* 구분선 */}
+            {APPS_SCRIPT_URL && (
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.008 255)" }} />
+                <span className="text-xs text-muted-foreground">또는 JSON 파일 직접 업로드</span>
+                <div className="flex-1 h-px" style={{ background: "oklch(0.88 0.008 255)" }} />
+              </div>
+            )}
+
             {/* 드래그 앤 드롭 영역 */}
             <div
               onDrop={handleDrop}

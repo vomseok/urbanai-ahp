@@ -1,5 +1,5 @@
 // 7단계: 결과 확인 및 보고서 출력
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useSurvey } from "@/contexts/SurveyContext";
 import {
   CRITERIA,
@@ -25,12 +25,18 @@ import {
   CartesianGrid,
 } from "recharts";
 import { Button } from "@/components/ui/button";
-import { Download, RefreshCw, Printer, CheckCircle2, AlertTriangle, Users } from "lucide-react";
+import { Download, RefreshCw, Printer, CheckCircle2, AlertTriangle, Users, Send, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Link } from "wouter";
 
+// ▶ Google Apps Script 웹앱 URL을 여기에 입력하세요.
+//   설정 방법: https://github.com/vomseok/urbanai-ahp#google-sheets-연동-설정
+const APPS_SCRIPT_URL = import.meta.env.VITE_APPS_SCRIPT_URL || "";
+
 export default function StepResult() {
   const { state, resetSurvey } = useSurvey();
+  const [submitStatus, setSubmitStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const [submitError, setSubmitError] = useState("");
 
   // 모든 AHP 분석 결과 계산
   const rootResult = useMemo(() => analyzeAHP(state.rootMatrix), [state.rootMatrix]);
@@ -44,6 +50,13 @@ export default function StepResult() {
     () => calculateGlobalWeights(rootResult, subResults),
     [rootResult, subResults]
   );
+
+  // 결과 페이지 진입 시 자동으로 Google Sheets에 제출
+  useEffect(() => {
+    if (!APPS_SCRIPT_URL) return; // URL 미설정 시 스킵
+    if (submitStatus !== "idle") return;
+    handleSubmitToSheets();
+  }, []);
 
   // 레이더 차트 데이터
   const radarData = CRITERIA.map((c, i) => ({
@@ -64,6 +77,51 @@ export default function StepResult() {
   // 일관성 전체 검토
   const allConsistent = rootResult.isConsistent && subResults.every((r) => r.isConsistent);
   const inconsistentCount = [rootResult, ...subResults].filter((r) => !r.isConsistent).length;
+
+  // Google Sheets 제출
+  const handleSubmitToSheets = async () => {
+    if (!APPS_SCRIPT_URL) {
+      toast.error("Google Sheets URL이 설정되지 않았습니다. 관리자에게 문의하세요.");
+      return;
+    }
+    setSubmitStatus("loading");
+    setSubmitError("");
+
+    const payload = {
+      expertInfo: state.expert,
+      results: [rootResult, ...subResults].map((r) => ({
+        criterionId: r.criterionId,
+        labels: r.labels,
+        weights: r.weights.map((w) => Math.round(w * 10000) / 10000),
+        cr: Math.round(r.cr * 10000) / 10000,
+        isConsistent: r.isConsistent,
+      })),
+      globalWeights: globalWeights.map((gw) => ({
+        id: gw.id,
+        label: gw.label,
+        parentLabel: gw.parentLabel,
+        globalWeight: Math.round(gw.globalWeight * 10000) / 10000,
+      })),
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      // Google Apps Script는 CORS 이슈로 no-cors 모드 사용
+      await fetch(APPS_SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      // no-cors 모드에서는 응답 본문을 읽을 수 없으므로 성공으로 처리
+      setSubmitStatus("success");
+      toast.success("응답이 Google Sheets에 자동 저장되었습니다.");
+    } catch (err) {
+      setSubmitStatus("error");
+      setSubmitError(String(err));
+      toast.error("Google Sheets 저장에 실패했습니다. JSON 파일로 저장해 주세요.");
+    }
+  };
 
   // JSON 내보내기
   const handleExport = () => {
@@ -144,6 +202,61 @@ export default function StepResult() {
           </div>
         </div>
       </div>
+
+      {/* Google Sheets 저장 상태 배너 */}
+      {APPS_SCRIPT_URL && (
+        <div
+          className="p-3 rounded-lg mb-4 flex items-center gap-3 no-print"
+          style={{
+            background: submitStatus === "success"
+              ? "oklch(0.95 0.05 145)"
+              : submitStatus === "error"
+              ? "oklch(0.97 0.05 25)"
+              : submitStatus === "loading"
+              ? "oklch(0.97 0.02 255)"
+              : "oklch(0.97 0.02 255)",
+            border: `1px solid ${
+              submitStatus === "success"
+                ? "oklch(0.75 0.12 145)"
+                : submitStatus === "error"
+                ? "oklch(0.75 0.12 25)"
+                : "oklch(0.88 0.008 255)"
+            }`,
+          }}
+        >
+          {submitStatus === "loading" && (
+            <Loader2 size={16} className="animate-spin" style={{ color: "oklch(0.45 0.08 255)" }} />
+          )}
+          {submitStatus === "success" && (
+            <CheckCircle2 size={16} style={{ color: "oklch(0.55 0.15 145)" }} />
+          )}
+          {submitStatus === "error" && (
+            <AlertTriangle size={16} style={{ color: "oklch(0.55 0.15 25)" }} />
+          )}
+          {submitStatus === "idle" && (
+            <Send size={16} style={{ color: "oklch(0.45 0.08 255)" }} />
+          )}
+          <div className="flex-1">
+            <p className="text-xs font-medium" style={{
+              color: submitStatus === "success"
+                ? "oklch(0.35 0.12 145)"
+                : submitStatus === "error"
+                ? "oklch(0.35 0.12 25)"
+                : "oklch(0.35 0.04 255)"
+            }}>
+              {submitStatus === "loading" && "Google Sheets에 응답을 저장하는 중..."}
+              {submitStatus === "success" && "응답이 Google Sheets에 자동 저장되었습니다."}
+              {submitStatus === "error" && `저장 실패: ${submitError} — JSON 파일로 수동 저장해 주세요.`}
+              {submitStatus === "idle" && "Google Sheets 저장 대기 중..."}
+            </p>
+          </div>
+          {submitStatus === "error" && (
+            <Button size="sm" variant="outline" onClick={handleSubmitToSheets} className="text-xs h-7">
+              재시도
+            </Button>
+          )}
+        </div>
+      )}
 
       {/* 일관성 종합 요약 */}
       <div
@@ -310,7 +423,7 @@ export default function StepResult() {
                       />
                     </div>
                     <span
-                      className="text-xs font-bold w-10 text-right mono-data"
+                      className="text-xs font-bold mono-data w-12 text-right"
                       style={{ color: "oklch(0.26 0.08 255)" }}
                     >
                       {toPercent(subResult.weights[sIdx])}
@@ -388,6 +501,21 @@ export default function StepResult() {
           <Download size={16} className="mr-2" />
           JSON 파일로 저장
         </Button>
+        {APPS_SCRIPT_URL && submitStatus !== "success" && (
+          <Button
+            onClick={handleSubmitToSheets}
+            disabled={submitStatus === "loading"}
+            className="flex-[2] text-white font-semibold"
+            style={{ background: "oklch(0.38 0.10 145)" }}
+          >
+            {submitStatus === "loading" ? (
+              <Loader2 size={16} className="mr-2 animate-spin" />
+            ) : (
+              <Send size={16} className="mr-2" />
+            )}
+            Google Sheets에 제출
+          </Button>
+        )}
       </div>
     </div>
   );
